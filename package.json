@@ -1,6 +1,6 @@
 {
   "name": "gulp-renderful",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Precompile templates to HTML with the power of Express!",
   "main": "index.js",
   "dependencies": {
