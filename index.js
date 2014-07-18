@@ -15,9 +15,11 @@ module.exports = function(fileName, opt) {
     opt.extensions = opt.extensions || [];
     opt.data       = opt.data       || {};
 
-    var files    = [],
+    var self     = null,
+        files    = [],
         filePath = path.join(path.resolve(__dirname), '.tmp'),
-        exts     = [];
+        exts     = [],
+        timeout  = null;
 
     app.engine('ejs', opt.engine);
     app.set('view engine', 'ejs');
@@ -33,6 +35,9 @@ module.exports = function(fileName, opt) {
     }
 
     function store(file) {
+
+        self = this;
+
         if (file.isNull()) {
             return;
         }
@@ -41,23 +46,27 @@ module.exports = function(fileName, opt) {
             return this.emit('error', new PluginError('gulp-renderful',  'Streaming not supported'));
         }
 
-        var p      = path.join(filePath, file.path),
-            ext    = path.extname(file.path);
+        var viewpath = path.relative('./', file.path).replace('..' + path.sep),
+            fullpath = path.join(filePath, viewpath),
+            ext      = path.extname(file.path);
 
-        fs.mkdirs(path.dirname(p), function () {
-            file.pipe(fs.createWriteStream(p));
+        fs.mkdirs(path.dirname(fullpath), function () {
+            file.pipe(fs.createWriteStream(fullpath));
         });
 
         if (!opt.extensions.length || exts.indexOf(ext) !== -1) {
             registerExtension(ext);
         }
 
+        file.viewpath = viewpath;
         files.push(file);
+
+        // There's no way to detect when the last file is sent. So, yeah, this sucks, I know.
+        clearTimeout(timeout);
+        timeout = setTimeout(render, 250);
     }
 
     function render() {
-
-        var self = this;
 
         async.each(files, function (file, callback) {
 
@@ -69,7 +78,7 @@ module.exports = function(fileName, opt) {
                 return;
             }
 
-            app.render(file.path, opt.data, function (err, html) {
+            app.render(file.viewpath, opt.data, function (err, html) {
                 if (err) {
                     return callback(err);
                 }
@@ -89,5 +98,5 @@ module.exports = function(fileName, opt) {
         });
     }
 
-    return through(store, render);
+    return through(store);
 };
