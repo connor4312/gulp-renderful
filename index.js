@@ -36,8 +36,6 @@ module.exports = function(fileName, opt) {
 
     function store(file) {
 
-        self = this;
-
         if (file.isNull()) {
             return;
         }
@@ -83,7 +81,7 @@ module.exports = function(fileName, opt) {
                     return callback(err);
                 }
 
-                file.contents = new Buffer(html);
+                file.contents = new Buffer(html, 'utf8');
                 self.push(file);
 
                 callback();
@@ -98,5 +96,7 @@ module.exports = function(fileName, opt) {
         });
     }
 
-    return through(store);
+    return through(store, function () {
+        self = this;
+    });
 };
