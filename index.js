@@ -15,8 +15,7 @@ module.exports = function(fileName, opt) {
     opt.extensions = opt.extensions || [];
     opt.data       = opt.data       || {};
 
-    var self     = this,
-        files    = [],
+    var files    = [],
         filePath = path.join(path.resolve(__dirname), '.tmp'),
         exts     = [];
 
