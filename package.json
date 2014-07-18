@@ -20,8 +20,5 @@
   "bugs": {
     "url": "https://github.com/connor4312/gulp-renderful/issues"
   },
-  "homepage": "https://github.com/connor4312/gulp-renderful",
-  "dependencies": {
-    "through2": "^0.5.1"
-  }
+  "homepage": "https://github.com/connor4312/gulp-renderful"
 }
