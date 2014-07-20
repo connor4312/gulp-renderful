@@ -1,7 +1,6 @@
 var gutil   = require('gulp-util'),
     express = require('express'),
     path    = require('path'),
-    through = require('through'),
     fs      = require('fs-extra'),
     async   = require('async'),
     app     = express(),
@@ -34,14 +33,16 @@ module.exports = function(fileName, opt) {
         registerExtension(opt.extensions[i]);
     }
 
-    function store(file) {
+    var transform = new require('stream').Transform({ objectMode: true });
 
+    transform._transform = function (file, encoding, callback) {
         if (file.isNull()) {
-            return;
+            return callback();
         }
 
         if (file.isStream()) {
-            return this.emit('error', new PluginError('gulp-renderful',  'Streaming not supported'));
+            this.emit('error', new PluginError('gulp-renderful',  'Streaming not supported'));
+            return callback();
         }
 
         var viewpath = path.relative('./', file.path).replace('..' + path.sep),
@@ -49,7 +50,8 @@ module.exports = function(fileName, opt) {
             ext      = path.extname(file.path);
 
         fs.mkdirs(path.dirname(fullpath), function () {
-            file.pipe(fs.createWriteStream(fullpath));
+            file.pipe(fs.createWriteStream(fullpath))
+                .on('end', callback);
         });
 
         if (!opt.extensions.length || exts.indexOf(ext) !== -1) {
@@ -58,13 +60,10 @@ module.exports = function(fileName, opt) {
 
         file.viewpath = viewpath;
         files.push(file);
-
-        // There's no way to detect when the last file is sent. So, yeah, this sucks, I know.
-        clearTimeout(timeout);
-        timeout = setTimeout(render, 250);
     }
 
-    function render() {
+    transform._flush = function (callback) {
+        var self = this;
 
         async.each(files, function (file, callback) {
 
@@ -93,10 +92,9 @@ module.exports = function(fileName, opt) {
             }
 
             fs.remove(filePath);
+            return callback();
         });
     }
 
-    return through(store, function () {
-        self = this;
-    });
+    return transform;
 };
