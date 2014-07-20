@@ -14,8 +14,7 @@ module.exports = function(fileName, opt) {
     opt.extensions = opt.extensions || [];
     opt.data       = opt.data       || {};
 
-    var self     = null,
-        files    = [],
+    var files    = [],
         filePath = path.join(path.resolve(__dirname), '.tmp'),
         exts     = [],
         timeout  = null;
@@ -50,8 +49,7 @@ module.exports = function(fileName, opt) {
             ext      = path.extname(file.path);
 
         fs.mkdirs(path.dirname(fullpath), function () {
-            file.pipe(fs.createWriteStream(fullpath))
-                .on('end', callback);
+            fs.writeFile(fullpath, file.contents, callback);
         });
 
         if (!opt.extensions.length || exts.indexOf(ext) !== -1) {
