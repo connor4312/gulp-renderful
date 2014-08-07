@@ -1,3 +1,7 @@
+# Deprecated
+
+At the time I wrote this, I wasn't aware that EJS had added `includes` and other more advanced features itself several versions ago. I recommend using [gulp-ejs](https://github.com/rogeriopvl/gulp-ejs) instead of this!
+
 # gulp-renderful
 
 This package is designed to make the building of static sites easier and more enjoyable. Rather than using ugly PHP `includes`, you can now use EJS templating (or whatever else you like) backed by Express to render HTML. This allows you to, for example, include view partials with `<%- include somepartial.ejs %>`.
